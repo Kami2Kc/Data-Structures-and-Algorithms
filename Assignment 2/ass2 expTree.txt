@@ -1,0 +1,135 @@
+public class ExpTree
+{
+    private int type;
+    private Object value;
+    private ExpTree leftChild;
+    private ExpTree rightChild;
+
+    public ExpTree(int type, Object value, ExpTree left, ExpTree right)
+    {
+        this.type = type;
+        this.value = value;
+        this.leftChild = left;
+        this.rightChild = right;
+    }
+
+    public static final int numNode = 0, idNode = 1, opNode = 2, letNode = 3, andNode = 4, equalsNode = 5;
+
+    StringBuffer output = new StringBuffer();
+
+    public String toPostOrder(ExpTree tree)
+    {
+        if (tree != null)
+        {
+            toPostOrder(tree.leftChild);
+            toPostOrder(tree.rightChild);
+
+            output.append(tree.value).append(" ");
+        }
+
+        return output.toString();
+    }
+
+    public String toString(ExpTree tree, boolean brackets)
+    {
+        StringBuilder inOrderOutput = new StringBuilder();
+
+        boolean leftBrackets = true;
+        boolean rightBrackets = true;
+
+        if (tree.type == numNode || tree.type == idNode)
+        {
+            return inOrderOutput.append(tree.value).toString();
+        }
+
+        else
+        {
+            if ((tree.leftChild.value.toString().equals("+") || tree.leftChild.value.toString().equals("-")) && (tree.value.toString().equals("+") || tree.value.toString().equals("-")))
+            {
+                leftBrackets = false;
+            }
+
+            if (tree.rightChild.value.toString().equals("+") && (tree.value.toString().equals("+") || tree.value.toString().equals("-")))
+            {
+                rightBrackets = false;
+            }
+
+            if (brackets)
+            {
+                inOrderOutput.append('(');
+            }
+
+            inOrderOutput.append(tree.toString(tree.leftChild, leftBrackets));
+            inOrderOutput.append(tree.value);
+            inOrderOutput.append(tree.toString(tree.rightChild, rightBrackets));
+
+            if (brackets)
+            {
+                inOrderOutput.append(')');
+            }
+
+            return inOrderOutput.toString();
+        }
+    }
+
+    public int evaluate(ExpTree tree)
+    {
+        if (tree.type == numNode)
+        {
+            return (int) tree.value;
+        }
+
+        else if (tree.type == idNode)
+        {
+            char[] idNodeFirstChar = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',};
+
+            for(int i = 0; i <= 26; i++)
+            {
+                if (idNodeFirstChar[i] == tree.value.toString().charAt(0))
+                {
+                    return 25 - i;
+                }
+            }
+        }
+
+        else if (tree.type == opNode)
+        {
+            if (tree.value.toString().equals("+"))
+            {
+
+                return tree.evaluate(tree.leftChild) + tree.evaluate(tree.rightChild);
+            }
+
+            else if (tree.value.toString().equals("-"))
+            {
+                return tree.evaluate(tree.leftChild) - tree.evaluate(tree.rightChild);
+            }
+
+            else if (tree.value.toString().equals("*"))
+            {
+                return tree.evaluate(tree.leftChild) * tree.evaluate(tree.rightChild);
+            }
+
+            else if (tree.value.toString().equals("/"))
+            {
+                return tree.evaluate(tree.leftChild) / tree.evaluate(tree.rightChild);
+            }
+
+            else if (tree.value.toString().equals("%"))
+            {
+                return tree.evaluate(tree.leftChild) % tree.evaluate(tree.rightChild);
+            }
+
+            else if (tree.value.toString().equals("^"))
+            {
+                if (tree.evaluate(tree.rightChild) < 0)
+                {
+                    throw new IllegalArgumentException("Cannot have negative powers!");
+                }
+
+                return (int) Math.pow(tree.evaluate(tree.leftChild), tree.evaluate(tree.rightChild));
+            }
+        }
+        return 0;
+    }
+}
